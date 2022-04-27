@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -25,10 +26,11 @@ type Director struct {
 	Lastname  string `json:"lastname"`
 }
 
-// declared empty array of movie object
-var movies []Movie
-
 func getMovies(w http.ResponseWriter, r *http.Request) {
+	plan, _ := ioutil.ReadFile("movies.json")
+	var movies []Movie
+	json.Unmarshal(plan, &movies)
+
 	// defining header's content-type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -37,6 +39,10 @@ func getMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
+	plan, _ := ioutil.ReadFile("movies.json")
+	var movies []Movie
+	json.Unmarshal(plan, &movies)
+
 	// defining header's content-type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -47,6 +53,8 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 	for index, item := range movies {
 		if item.ID == params["id"] { // finding movie with given id
 			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
+			file, _ := json.MarshalIndent(movies, "", " ")
+			ioutil.WriteFile("movies.json", file, 0644)
 			break
 		}
 	}
@@ -55,6 +63,10 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMovie(w http.ResponseWriter, r *http.Request) {
+	plan, _ := ioutil.ReadFile("movies.json")
+	var movies []Movie
+	json.Unmarshal(plan, &movies)
+
 	// defining header's content-type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -71,6 +83,10 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
+	plan, _ := ioutil.ReadFile("movies.json")
+	var movies []Movie
+	json.Unmarshal(plan, &movies)
+
 	// defining header's content-type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -78,10 +94,16 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&movie)    // decoding request body to Movie type of object
 	movie.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Movie type of object
 	movies = append(movies, movie)                // appending Movie type of object to movies array
-	json.NewEncoder(w).Encode(movie)              // encoding and writing movie in json response
+	file, _ := json.MarshalIndent(movies, "", " ")
+	ioutil.WriteFile("movies.json", file, 0644)
+	json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 }
 
 func updateMovie(w http.ResponseWriter, r *http.Request) {
+	plan, _ := ioutil.ReadFile("movies.json")
+	var movies []Movie
+	json.Unmarshal(plan, &movies)
+
 	// defining header's content-type
 	w.Header().Set("Content-Type", "application/json")
 
@@ -97,7 +119,9 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 			_ = json.NewDecoder(r.Body).Decode(&movie) // decoding request body to Movie type of object
 			movie.ID = params["id"]                    // assigning id to Movie type of object
 			movies = append(movies, movie)             // appending Movie type of object to movies array
-			json.NewEncoder(w).Encode(movie)           // encoding and writing movie in json response
+			file, _ := json.MarshalIndent(movies, "", " ")
+			ioutil.WriteFile("movies.json", file, 0644)
+			json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 			return
 		}
 	}
@@ -105,10 +129,6 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := mux.NewRouter() // defined new mux router
-
-	// appending some object of movie type
-	movies = append(movies, Movie{ID: "1", Isbn: "438227", Title: "Movie One", Director: &Director{Firstname: "Jhon", Lastname: "Doe"}})
-	movies = append(movies, Movie{ID: "2", Isbn: "45455", Title: "Movie Two", Director: &Director{Firstname: "Steve", Lastname: "Smith"}})
 
 	r.HandleFunc("/movies", getMovies).Methods("GET")           // function handler to get all movies
 	r.HandleFunc("/movies/{id}", getMovie).Methods("GET")       // function handler to get a movie
