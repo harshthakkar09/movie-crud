@@ -27,6 +27,7 @@ type Director struct {
 }
 
 func getMovies(w http.ResponseWriter, r *http.Request) {
+	// start reading json file
 	plan, _ := ioutil.ReadFile("movies.json")
 	var movies []Movie
 	json.Unmarshal(plan, &movies)
@@ -39,6 +40,7 @@ func getMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
+	// start reading json file
 	plan, _ := ioutil.ReadFile("movies.json")
 	var movies []Movie
 	json.Unmarshal(plan, &movies)
@@ -53,6 +55,7 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 	for index, item := range movies {
 		if item.ID == params["id"] { // finding movie with given id
 			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
+			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
 			ioutil.WriteFile("movies.json", file, 0644)
 			break
@@ -63,6 +66,7 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMovie(w http.ResponseWriter, r *http.Request) {
+	// start reading json file
 	plan, _ := ioutil.ReadFile("movies.json")
 	var movies []Movie
 	json.Unmarshal(plan, &movies)
@@ -83,6 +87,7 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
+	// start reading json file
 	plan, _ := ioutil.ReadFile("movies.json")
 	var movies []Movie
 	json.Unmarshal(plan, &movies)
@@ -94,12 +99,14 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&movie)    // decoding request body to Movie type of object
 	movie.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Movie type of object
 	movies = append(movies, movie)                // appending Movie type of object to movies array
+	// writing updated movies array into json file
 	file, _ := json.MarshalIndent(movies, "", " ")
 	ioutil.WriteFile("movies.json", file, 0644)
 	json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 }
 
 func updateMovie(w http.ResponseWriter, r *http.Request) {
+	// start reading json file
 	plan, _ := ioutil.ReadFile("movies.json")
 	var movies []Movie
 	json.Unmarshal(plan, &movies)
@@ -119,6 +126,7 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 			_ = json.NewDecoder(r.Body).Decode(&movie) // decoding request body to Movie type of object
 			movie.ID = params["id"]                    // assigning id to Movie type of object
 			movies = append(movies, movie)             // appending Movie type of object to movies array
+			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
 			ioutil.WriteFile("movies.json", file, 0644)
 			json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
