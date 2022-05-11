@@ -1,20 +1,24 @@
 [
  {
-  "id": "1",
+  "id": "98498081",
   "isbn": "438227",
-  "title": "Movie One",
+  "title": "Three Idiots",
   "director": {
-   "firstname": "Jhon",
-   "lastname": "Doe"
-  }
- },
- {
-  "id": "2",
-  "isbn": "45455",
-  "title": "Movie Two",
-  "director": {
-   "firstname": "Steve",
-   "lastname": "Smith"
-  }
+   "firstname": "Rajkumar",
+   "lastname": "Hirani"
+  },
+  "casts": [
+   "1"
+  ],
+  "ratings": [
+   {
+    "rater": "imdb",
+    "rating": 4.9
+   },
+   {
+    "rater": "Times of India",
+    "rating": 4.4
+   }
+  ]
  }
 ]
