@@ -1,7 +1,7 @@
 package router
 
 import (
-	"movie-crud/src/authorization"
+	"movie-crud/src/authentication"
 	"movie-crud/src/controllers"
 	"movie-crud/src/middlewares"
 	"net/http"
@@ -12,8 +12,8 @@ import (
 func RegisterRoutes() *mux.Router {
 	r := mux.NewRouter() // defined new mux router
 
-	r.HandleFunc("/login", authorization.Login).Methods("POST")
-
+	r.HandleFunc("/login", authentication.Login).Methods("POST")
+	r.HandleFunc("/signup", authentication.Signup).Methods("POST")
 	MovieController := controllers.MovieController{}
 	r.Handle("/movies", middlewares.Auth(http.HandlerFunc(MovieController.GetMovies))).Methods("GET")           // function handler to get all movies
 	r.Handle("/movies/{id}", middlewares.Auth(http.HandlerFunc(MovieController.GetMovie))).Methods("GET")       // function handler to get a movie

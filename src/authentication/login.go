@@ -1,54 +1,39 @@
-package authorization
+package authentication
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-// JWT Key used to create the signature
-var jwtKey = []byte("cds/movie-provider")
-
-func GetJWTKey() []byte {
-	return jwtKey
-}
-
-var users = map[string]string{
-	"admin": "Crest@123",
-	"guest": "Guest@123",
-}
-
-// Structure used to extract username and password from request body
-type Credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-// A structure which will be converted to JWT
-// Username and expiration time(from standard claims)
-type Claims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
-}
-
 func Login(w http.ResponseWriter, r *http.Request) {
 	var credentials Credentials
+
+	//Reading users.json to Array
+	var usersArray []Credentials
+	userjson, _ := ioutil.ReadFile("./src/data/users.json")
+	json.Unmarshal(userjson, &usersArray)
 
 	// decoding json body into credentials
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
-		// decode failed, wrong json body
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	//Get hashpassword for given username
+	var hashPassword string
+	for _, v := range usersArray {
+		if v.Username == credentials.Username {
+			hashPassword = v.Password
+		}
+	}
 
-	expectedPassword, ok := users[credentials.Username]
+	password := credentials.Password
 
-	// if password is not saved for given username
-	// or password does not match
-	if !ok || expectedPassword != credentials.Password {
+	if !CheckPasswordHash(password, hashPassword) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -82,4 +67,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Value:   tokenString,
 		Expires: expirationTime,
 	})
+
+	loginmsg := "login Sucess Token Expires within 5 minutes."
+	json.NewEncoder(w).Encode(loginmsg)
 }

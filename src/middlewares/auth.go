@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"movie-crud/src/authorization"
+	"movie-crud/src/authentication"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -26,10 +26,10 @@ func Auth(next http.Handler) http.Handler {
 		// extracting JWT from cookie
 		tokenstring := c.Value
 
-		claims := &authorization.Claims{}
+		claims := &authentication.Claims{}
 		// parsing JWT string and storing the result in claims
 		token, err := jwt.ParseWithClaims(tokenstring, claims, func(t *jwt.Token) (interface{}, error) {
-			return authorization.GetJWTKey(), nil
+			return authentication.GetJWTKey(), nil
 		})
 
 		if err != nil {
