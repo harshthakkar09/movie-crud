@@ -1,24 +1,13 @@
 [
- {
-  "id": "98498081",
-  "isbn": "438227",
-  "title": "Three Idiots",
-  "director": {
-   "firstname": "Rajkumar",
-   "lastname": "Hirani"
-  },
-  "casts": [
-   "1"
-  ],
-  "ratings": [
-   {
-    "rater": "imdb",
-    "rating": 4.9
-   },
-   {
-    "rater": "Times of India",
-    "rating": 4.4
-   }
-  ]
- }
+    {
+        "id": "98498081",
+        "isbn": "Comedy",
+        "title": "Hera pheri 2",
+        "director": {
+            "firstname": "Comedy",
+            "lastname": "King"
+        },
+        "casts": null,
+        "ratings": null
+    }
 ]

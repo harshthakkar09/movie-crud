@@ -15,7 +15,7 @@ type CastController struct{}
 
 func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("casts.json")
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
 	json.Unmarshal(plan, &casts)
 
@@ -28,7 +28,7 @@ func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
 
 func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("casts.json")
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
 	json.Unmarshal(plan, &casts)
 
@@ -44,7 +44,7 @@ func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 			casts = append(casts[:index], casts[index+1:]...) // updating casts array to delete a cast
 			// writing updated casts array into json file
 			file, _ := json.MarshalIndent(casts, "", " ")
-			ioutil.WriteFile("casts.json", file, 0644)
+			ioutil.WriteFile("./src/data/casts.json", file, 0644)
 			break
 		}
 	}
@@ -54,7 +54,7 @@ func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 
 func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("casts.json")
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
 	json.Unmarshal(plan, &casts)
 
@@ -75,7 +75,7 @@ func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
 
 func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("casts.json")
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
 	json.Unmarshal(plan, &casts)
 
@@ -88,13 +88,13 @@ func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 	casts = append(casts, cast)                  // appending Movie type of object to casts array
 	// writing updated casts array into json file
 	file, _ := json.MarshalIndent(casts, "", " ")
-	ioutil.WriteFile("casts.json", file, 0644)
+	ioutil.WriteFile("./src/data/casts.json", file, 0644)
 	json.NewEncoder(w).Encode(cast) // encoding and writing movie in json response
 }
 
 func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("casts.json")
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
 	json.Unmarshal(plan, &casts)
 
@@ -115,7 +115,7 @@ func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 			casts = append(casts, cast)               // appending Cast type of object to Casts array
 			// writing updated casts array into json file
 			file, _ := json.MarshalIndent(casts, "", " ")
-			ioutil.WriteFile("casts.json", file, 0644)
+			ioutil.WriteFile("./src/data/casts.json", file, 0644)
 			json.NewEncoder(w).Encode(cast) // encoding and writing cast in json response
 			return
 		}

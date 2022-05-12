@@ -15,7 +15,7 @@ type MovieController struct{}
 
 func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("movies-crud/src/data/movies.json")
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
 	json.Unmarshal(plan, &movies)
 
@@ -28,13 +28,13 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	movies = append(movies, movie)                // appending Movie type of object to movies array
 	// writing updated movies array into json file
 	file, _ := json.MarshalIndent(movies, "", " ")
-	ioutil.WriteFile("movies.json", file, 0644)
+	ioutil.WriteFile("./src/data/movies.json", file, 0644)
 	json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 }
 
 func (m MovieController) GetMovies(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("movies.json")
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
 	json.Unmarshal(plan, &movies)
 
@@ -47,7 +47,7 @@ func (m MovieController) GetMovies(w http.ResponseWriter, r *http.Request) {
 
 func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("movies.json")
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
 	json.Unmarshal(plan, &movies)
 
@@ -68,7 +68,7 @@ func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 
 func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("movies.json")
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
 	json.Unmarshal(plan, &movies)
 
@@ -89,7 +89,7 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 			movies = append(movies, movie)             // appending Movie type of object to movies array
 			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
-			ioutil.WriteFile("movies.json", file, 0644)
+			ioutil.WriteFile("./src/data/movies.json", file, 0644)
 			json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 			return
 		}
@@ -98,7 +98,7 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 
 func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
-	plan, _ := ioutil.ReadFile("movies.json")
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
 	json.Unmarshal(plan, &movies)
 
@@ -114,7 +114,7 @@ func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
 			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
-			ioutil.WriteFile("movies.json", file, 0644)
+			ioutil.WriteFile("./src/data/movies.json", file, 0644)
 			break
 		}
 	}
