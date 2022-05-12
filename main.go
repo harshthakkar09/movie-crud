@@ -74,6 +74,14 @@ func ValidateMovieObject(movie *Movie) error {
 		return fmt.Errorf("movie genre %s is not allowed", movie.Genre)
 	}
 
+	// checking whether all ratings have rater
+	ratings := movie.Ratings
+	for _, rating := range ratings {
+		if rating.Rater == "" {
+			return fmt.Errorf("rater is required")
+		}
+	}
+
 	return nil
 }
 
