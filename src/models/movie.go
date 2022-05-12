@@ -8,4 +8,5 @@ type Movie struct {
 	Director *Director `json:"director"`
 	CastIDs  []string  `json:"casts"`
 	Ratings  []Rating  `json:"ratings"`
+	Genre    string    `json:"genre"`
 }
