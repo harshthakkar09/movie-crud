@@ -1,2 +1,10 @@
+# github.com/golang-jwt/jwt v3.2.2+incompatible
+## explicit
+github.com/golang-jwt/jwt
 # github.com/gorilla/mux v1.8.0
 ## explicit; go 1.12
+github.com/gorilla/mux
+# golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
+## explicit; go 1.17
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
