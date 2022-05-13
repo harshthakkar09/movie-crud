@@ -1,8 +1,20 @@
 [
     {
-        "id": "1",
-        "name": "Amir Khan",
+        "id": "4800074",
+        "name": "Akshay Kumar",
         "gender": "male",
-        "age": 57
+        "age": 54
+    },
+    {
+        "id": "40240159",
+        "name": "Paresh Rawal",
+        "gender": "male",
+        "age": 66
+    },
+    {
+        "id": "67148390",
+        "name": "Tabu",
+        "gender": "female",
+        "age": 51
     }
 ]

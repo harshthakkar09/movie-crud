@@ -122,8 +122,7 @@ func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 	// iterate through list of casts
 	for index, item := range casts {
 		if item.ID == params["id"] { // finding cast with given id
-			casts = append(casts[:index], casts[index+1:]...) // updating casts array to delete a cast
-			castOld := item                                   //will store old cast value for comperision purpose
+			castOld := item //will store old cast value for comperision purpose
 			var cast models.Cast
 			err := json.NewDecoder(r.Body).Decode(&cast) // decoding request body to Cast type of object
 			if err != nil {
@@ -147,7 +146,8 @@ func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			casts = append(casts, cast) // appending Cast type of object to Casts array
+			casts = append(casts[:index], casts[index+1:]...) // updating casts array to delete a cast
+			casts = append(casts, cast)                       // appending Cast type of object to Casts array
 			// writing updated casts array into json file
 			file, _ := json.MarshalIndent(casts, "", " ")
 			ioutil.WriteFile("./src/data/casts.json", file, 0644)
