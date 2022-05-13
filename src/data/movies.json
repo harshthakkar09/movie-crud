@@ -1,48 +1,25 @@
 [
-    {
-        "id": "98498081",
-        "isbn": "ok",
-        "title": "Hera pheri",
-        "director": {
-            "firstname": "Comedy",
-            "lastname": "King"
-        },
-        "casts": [
-            "1"
-        ],
-        "ratings": [
-            {
-                "rater": "imdb",
-                "rating": 4.9
-            },
-            {
-                "rater": "Times of India",
-                "rating": 4.4
-            }
-        ],
-        "genre": "thriller"
-    },
-    {
-        "id": "89959275",
-        "isbn": "ok",
-        "title": "Hera pheri 2",
-        "director": {
-            "firstname": "Comedy",
-            "lastname": "King"
-        },
-        "casts": [
-            "1"
-        ],
-        "ratings": [
-            {
-                "rater": "imdb",
-                "rating": 4.9
-            },
-            {
-                "rater": "Times of India",
-                "rating": 4.4
-            }
-        ],
-        "genre": "thriller"
-    }
+ {
+  "id": "17852714",
+  "title": "Hera pheri",
+  "director": {
+   "firstname": "Priyadarshan"
+  },
+  "casts": [
+   "4800074",
+   "40240159",
+   "67148390"
+  ],
+  "ratings": [
+   {
+    "rater": "imdb",
+    "rating": 8.1
+   },
+   {
+    "rater": "Times of India",
+    "rating": 4.1
+   }
+  ],
+  "genre": "thriller"
+ }
 ]

@@ -54,6 +54,21 @@ func ValidateMovieObject(movie *models.Movie) error {
 	return nil
 }
 
+func castExists(castID string) bool {
+	// start reading json file
+	plan, _ := ioutil.ReadFile("./src/data/casts.json")
+	var casts []models.Cast
+	json.Unmarshal(plan, &casts)
+
+	// iterate through list of casts
+	for _, item := range casts { // finding cast with given id
+		if item.ID == castID {
+			return true
+		}
+	}
+	return false
+}
+
 func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
@@ -76,6 +91,14 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 		return
+	}
+
+	// Validating cast-IDs
+	for _, castID := range movie.CastIDs {
+		if !castExists(castID) {
+			http.Error(w, "cast with id="+castID+" does not exist", http.StatusBadRequest)
+			return
+		}
 	}
 
 	movies = append(movies, movie) // appending Movie type of object to movies array
@@ -137,7 +160,6 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 	// iterate through list of movies
 	for index, item := range movies {
 		if item.ID == params["id"] { // finding movie with given id
-			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
 			oldMovie := item
 			var movie models.Movie
 			err := json.NewDecoder(r.Body).Decode(&movie) // decoding request body to Movie type of object
@@ -153,17 +175,26 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			movie.ID = params["id"]        // assigning id to Movie type of object
-			movies = append(movies, movie) // appending Movie type of object to movies array
-
 			err = ValidateMovieObject(&movie)
 			if err != nil {
 				http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 			}
 
+			// Validating cast-IDs
+			for _, castID := range movie.CastIDs {
+				if !castExists(castID) {
+					http.Error(w, "cast with id="+castID+" does not exist", http.StatusBadRequest)
+					return
+				}
+			}
+
+			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
+			movie.ID = params["id"]                              // assigning id to Movie type of object
+			movies = append(movies, movie)                       // appending Movie type of object to movies array
+
 			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
-			ioutil.WriteFile("movies.json", file, 0644)
+			ioutil.WriteFile("./src/data/movies.json", file, 0644)
 			json.NewEncoder(w).Encode(movie) // encoding and writing movie in json response
 			return
 		}
