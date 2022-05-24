@@ -150,6 +150,7 @@ func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	http.Error(w, "movie with given id not found", http.StatusNotFound)
 }
 
 func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
@@ -243,9 +244,11 @@ func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 			// writing updated movies array into json file
 			file, _ := json.MarshalIndent(movies, "", " ")
 			ioutil.WriteFile("./src/data/movies.json", file, 0644)
-			break
+			// encoding and writing movies in json response
+			json.NewEncoder(w).Encode(movies)
+			return
 		}
 	}
-	// encoding and writing movies in json response
-	json.NewEncoder(w).Encode(movies)
+
+	http.Error(w, "movie with given id not found", http.StatusNotFound)
 }

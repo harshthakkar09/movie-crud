@@ -86,6 +86,7 @@ func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
 
 	// encoding and writing casts in json response
 	json.NewEncoder(w).Encode(casts)
+
 }
 
 func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +112,7 @@ func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	http.Error(w, "cast with given id not found", http.StatusNotFound)
 }
 
 func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
@@ -197,9 +199,11 @@ func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 			// writing updated casts array into json file
 			file, _ := json.MarshalIndent(casts, "", " ")
 			ioutil.WriteFile("./src/data/casts.json", file, 0644)
-			break
+			// encoding and writing movies in json response
+			json.NewEncoder(w).Encode(casts)
+			return
 		}
 	}
-	// encoding and writing movies in json response
-	json.NewEncoder(w).Encode(casts)
+
+	http.Error(w, "movie with given id not found", http.StatusNotFound)
 }
