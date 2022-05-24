@@ -8,12 +8,15 @@ import (
 	"movie-crud/src/models"
 	"net/http"
 	"strconv"
-	"time"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
 
-var validGender = []string{"male", "female"}
+var (
+	validGender = []string{"male", "female"}
+	castMutex   sync.Mutex
+)
 
 type CastController struct{}
 
@@ -38,6 +41,10 @@ func ValidateCastObject(cast *models.Cast) error {
 }
 
 func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	castMutex.Lock()
+	defer castMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
@@ -54,9 +61,7 @@ func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rand.Seed(time.Now().Unix())
 	cast.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Cast type of object
-
 	err = ValidateCastObject(&cast)
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
@@ -84,6 +89,10 @@ func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	castMutex.Lock()
+	defer castMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
@@ -105,6 +114,10 @@ func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	castMutex.Lock()
+	defer castMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
@@ -163,6 +176,10 @@ func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	castMutex.Lock()
+	defer castMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
@@ -173,7 +190,6 @@ func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 
 	// taking path parameters
 	params := mux.Vars(r)
-
 	// iterate through list of casts
 	for index, item := range casts {
 		if item.ID == params["id"] { // finding cast with given id
