@@ -8,12 +8,15 @@ import (
 	"movie-crud/src/models"
 	"net/http"
 	"strconv"
-	"time"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
 
-var validGenre = []string{"thriller", "action", "horror", "fiction", "comedy"}
+var (
+	validGenre = []string{"thriller", "action", "horror", "fiction", "comedy"}
+	movieMutex sync.Mutex
+)
 
 type MovieController struct{}
 
@@ -70,6 +73,10 @@ func castExists(castID string) bool {
 }
 
 func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
@@ -84,7 +91,6 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 	}
 
-	rand.Seed(time.Now().Unix())
 	movie.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Movie type of object
 
 	err = ValidateMovieObject(&movie)
@@ -122,6 +128,10 @@ func (m MovieController) GetMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
@@ -143,6 +153,10 @@ func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
@@ -207,6 +221,10 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
+
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
