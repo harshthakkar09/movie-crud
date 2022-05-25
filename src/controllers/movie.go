@@ -8,6 +8,7 @@ import (
 	"movie-crud/src/models"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -43,7 +44,7 @@ func ValidateMovieObject(movie *models.Movie) error {
 	// checking whether genre is valid
 	flag := checkStringInSlice(validGenre, movie.Genre)
 	if !flag {
-		return fmt.Errorf("movie genre %s is not allowed", movie.Genre)
+		return fmt.Errorf("genre value %s is not allowed", movie.Genre)
 	}
 
 	// checking whether all ratings have rater
@@ -57,19 +58,36 @@ func ValidateMovieObject(movie *models.Movie) error {
 	return nil
 }
 
-func castExists(castID string) bool {
+func castExists(CastIDs []string) ([]string, bool, error) {
+	//mutex
+	castMutex.Lock()
+	defer castMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
 	var casts []models.Cast
-	json.Unmarshal(plan, &casts)
-
+	err := json.Unmarshal(plan, &casts)
+	if err != nil {
+		return nil, false, err
+	}
 	// iterate through list of casts
-	for _, item := range casts { // finding cast with given id
-		if item.ID == castID {
-			return true
+	notPresentIDs := []string{}
+	for _, castid := range CastIDs { // finding cast with castid
+		found := false
+		for _, cast := range casts {
+			if cast.ID == castid {
+				found = true
+				break
+			}
+		}
+		if !found {
+			notPresentIDs = append(notPresentIDs, castid)
 		}
 	}
-	return false
+	if len(notPresentIDs) == 0 {
+		return nil, true, nil
+	}
+	return notPresentIDs, false, nil
 }
 
 func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
@@ -77,16 +95,17 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	//mutex
 	movieMutex.Lock()
 	defer movieMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
-	json.Unmarshal(plan, &movies)
-
-	// defining header's content-type
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(plan, &movies)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
 
 	var movie models.Movie
-	err := json.NewDecoder(r.Body).Decode(&movie) // decoding request body to Movie type of object
+	err = json.NewDecoder(r.Body).Decode(&movie) // decoding request body to Movie type of object
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 	}
@@ -100,11 +119,14 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validating cast-IDs
-	for _, castID := range movie.CastIDs {
-		if !castExists(castID) {
-			http.Error(w, "cast with id="+castID+" does not exist", http.StatusBadRequest)
-			return
-		}
+	notPresentIDs, res, err := castExists(movie.CastIDs)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		return
+	}
+	if !res {
+		http.Error(w, "casts with id=["+strings.Join(notPresentIDs, ", ")+"] does not exist", http.StatusBadRequest)
+		return
 	}
 
 	movies = append(movies, movie) // appending Movie type of object to movies array
@@ -115,13 +137,17 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m MovieController) GetMovies(w http.ResponseWriter, r *http.Request) {
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
-	json.Unmarshal(plan, &movies)
-
-	// defining header's content-type
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(plan, &movies)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
 
 	// encoding and writing movies in json response
 	json.NewEncoder(w).Encode(movies)
@@ -132,13 +158,14 @@ func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 	//mutex
 	movieMutex.Lock()
 	defer movieMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
-	json.Unmarshal(plan, &movies)
-
-	// defining header's content-type
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(plan, &movies)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
 
 	// taking path parameters
 	params := mux.Vars(r)
@@ -150,7 +177,9 @@ func (m MovieController) GetMovie(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, "movie with given id not found", http.StatusNotFound)
+
+	// will throw error if no id found
+	http.Error(w, fmt.Sprintf("movie with id = %s not found", params["id"]), http.StatusNotFound)
 }
 
 func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
@@ -158,19 +187,17 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 	//mutex
 	movieMutex.Lock()
 	defer movieMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
-	json.Unmarshal(plan, &movies)
-
-	// defining header's content-type
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(plan, &movies)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
 
 	// taking path parameters
 	params := mux.Vars(r)
-
-	// flag to check weather movie is found or not
-	flag := false
 
 	// iterate through list of movies
 	for index, item := range movies {
@@ -183,8 +210,6 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			flag = true
-
 			if oldMovie.Title != movie.Title {
 				http.Error(w, "movie title cannot be changed", http.StatusBadRequest)
 				return
@@ -196,11 +221,14 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Validating cast-IDs
-			for _, castID := range movie.CastIDs {
-				if !castExists(castID) {
-					http.Error(w, "cast with id="+castID+" does not exist", http.StatusBadRequest)
-					return
-				}
+			notPresentIDs, res, err := castExists(movie.CastIDs)
+			if err != nil {
+				http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+				return
+			}
+			if !res {
+				http.Error(w, "casts with id=["+strings.Join(notPresentIDs, ", ")+"] does not exist", http.StatusBadRequest)
+				return
 			}
 
 			movies = append(movies[:index], movies[index+1:]...) // updating movies array to delete a movie
@@ -216,9 +244,7 @@ func (m MovieController) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// will throw error if no id found
-	if !flag {
-		http.Error(w, "movie with given id not found", http.StatusNotFound)
-	}
+	http.Error(w, fmt.Sprintf("movie with id = %s not found", params["id"]), http.StatusNotFound)
 }
 
 func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
@@ -226,13 +252,14 @@ func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	//mutex
 	movieMutex.Lock()
 	defer movieMutex.Unlock()
+
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/movies.json")
 	var movies []models.Movie
-	json.Unmarshal(plan, &movies)
-
-	// defining header's content-type
-	w.Header().Set("Content-Type", "application/json")
+	err := json.Unmarshal(plan, &movies)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
 
 	// taking path parameters
 	params := mux.Vars(r)
@@ -250,5 +277,6 @@ func (m MovieController) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Error(w, "movie with given id not found", http.StatusNotFound)
+	// will throw error if no id found
+	http.Error(w, fmt.Sprintf("movie with id = %s not found", params["id"]), http.StatusNotFound)
 }

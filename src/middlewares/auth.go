@@ -47,6 +47,8 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
+		// defining header's content-type
+		w.Header().Set("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
 }

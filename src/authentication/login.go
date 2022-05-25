@@ -38,8 +38,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// expiration time : 5min
-	expirationTime := time.Now().Add(5 * time.Minute)
+	// expiration time : 1 hour
+	expirationTime := time.Now().Add(1 * time.Hour)
 
 	// creating JWT claim using username and expiration time
 	claims := &Claims{
@@ -68,6 +68,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Expires: expirationTime,
 	})
 
-	loginmsg := "login Sucess Token Expires within 5 minutes."
+	loginmsg := "login Success Token Expires within 1 Hour."
 	json.NewEncoder(w).Encode(loginmsg)
 }
