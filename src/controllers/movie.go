@@ -110,7 +110,20 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 	}
 
-	movie.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Movie type of object
+	id := strconv.Itoa(rand.Intn(100000000))
+	for {
+		isValidId := true
+		for _, v := range movies {
+			if v.ID == id {
+				isValidId = false
+			}
+		}
+		if isValidId {
+			break
+		}
+		id = strconv.Itoa(rand.Intn(100000000))
+	}
+	movie.ID = id // setting random id for Movie type of object
 
 	err = ValidateMovieObject(&movie)
 	if err != nil {
