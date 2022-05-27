@@ -61,8 +61,20 @@ func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 		return
 	}
-
-	cast.ID = strconv.Itoa(rand.Intn(100000000)) // generating random id for Cast type of object
+	id := strconv.Itoa(rand.Intn(100000000))
+	for {
+		isValidId := true
+		for _, v := range casts {
+			if v.ID == id {
+				isValidId = false
+			}
+		}
+		if isValidId {
+			break
+		}
+		id = strconv.Itoa(rand.Intn(100000000))
+	}
+	cast.ID = id // generating random id for Cast type of object
 	err = ValidateCastObject(&cast)
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
