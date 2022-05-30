@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -12,28 +13,34 @@ import (
 func Login(w http.ResponseWriter, r *http.Request) {
 	var credentials Credentials
 
-	//Reading users.json to Array
-	var usersArray []Credentials
-	userjson, _ := ioutil.ReadFile("./src/data/users.json")
-	json.Unmarshal(userjson, &usersArray)
-
 	// decoding json body into credentials
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	//Get hashpassword for given username
-	var hashPassword string
-	for _, v := range usersArray {
-		if v.Username == credentials.Username {
-			hashPassword = v.Password
-		}
+
+	if len(credentials.Username) == 0 || len(credentials.Password) == 0 {
+		WriteResponse(w, http.StatusBadRequest, "Username and password can not be empty")
+		return
+	}
+
+	// Reading users.json to usersMap
+	userJson, _ := ioutil.ReadFile("./src/data/users.json")
+	var usersMap map[string]interface{}
+	json.Unmarshal(userJson, &usersMap)
+
+	// getting hashed password from usersMap
+	hashPassword, ok := usersMap[credentials.Username]
+	if !ok {
+		WriteResponse(w, http.StatusBadRequest, fmt.Sprintf("User %s does not exist", credentials.Username))
+		return
 	}
 
 	password := credentials.Password
 
-	if !CheckPasswordHash(password, hashPassword) {
+	// comparing credentials
+	if !CheckPasswordHash(password, hashPassword.(string)) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -68,6 +75,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Expires: expirationTime,
 	})
 
-	loginmsg := "login Success Token Expires within 1 Hour."
-	json.NewEncoder(w).Encode(loginmsg)
+	json.NewEncoder(w).Encode("Login Success! Token Expires within 1 Hour.")
 }
