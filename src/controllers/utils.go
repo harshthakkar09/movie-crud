@@ -60,10 +60,10 @@ func castExists(CastIDs []string) ([]string, bool, error) {
 
 	// iterate through list of casts
 	notPresentIDs := []string{}
-	for _, castid := range CastIDs { // finding cast with castid
-		_, ok := castsMap[castid]
+	for _, castId := range CastIDs { // finding cast with castId
+		_, ok := castsMap[castId]
 		if !ok {
-			notPresentIDs = append(notPresentIDs, castid)
+			notPresentIDs = append(notPresentIDs, castId)
 		}
 	}
 	if len(notPresentIDs) == 0 {

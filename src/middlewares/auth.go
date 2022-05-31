@@ -24,11 +24,11 @@ func Auth(next http.Handler) http.Handler {
 		}
 
 		// extracting JWT from cookie
-		tokenstring := c.Value
+		tokenString := c.Value
 
 		claims := &authentication.Claims{}
 		// parsing JWT string and storing the result in claims
-		token, err := jwt.ParseWithClaims(tokenstring, claims, func(t *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			return authentication.GetJWTKey(), nil
 		})
 

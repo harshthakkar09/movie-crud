@@ -43,7 +43,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	//Append new user
 	usersMap[user.Username] = user.Password
-	file, _ := json.Marshal(usersMap)
+	file, _ := json.MarshalIndent(usersMap, "", " ")
 	ioutil.WriteFile("./src/data/users.json", file, 0644)
 
 	json.NewEncoder(w).Encode(fmt.Sprintf("User %s created successfully", user.Username))
