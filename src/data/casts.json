@@ -1,20 +1,14 @@
-[
-    {
-        "id": "4800074",
-        "name": "Akshay Kumar",
-        "gender": "male",
-        "age": 54
-    },
-    {
-        "id": "40240159",
-        "name": "Paresh Rawal",
-        "gender": "male",
-        "age": 66
-    },
-    {
-        "id": "67148390",
-        "name": "Tabu",
-        "gender": "female",
-        "age": 51
-    }
-]
+{
+ "12dff08d6c3643b594a2b6030a1f83f5": {
+  "age": 61,
+  "gender": "male",
+  "id": "12dff08d6c3643b594a2b6030a1f83f5",
+  "name": "Paresh rawal"
+ },
+ "c746e1ab577a431d9957ed32c79164e6": {
+  "id": "c746e1ab577a431d9957ed32c79164e6",
+  "name": "Akshay kumar",
+  "gender": "male",
+  "age": 55
+ }
+}

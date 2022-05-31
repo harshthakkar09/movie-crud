@@ -1,6 +1,9 @@
 package authentication
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -25,11 +28,18 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func GeneratehashPassword(password string) (string, error) {
+func GenerateHashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func WriteResponse(w http.ResponseWriter, statusCode int, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(msg)
 }

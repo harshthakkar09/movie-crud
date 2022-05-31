@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"movie-crud/src/models"
 	"net/http"
-	"strconv"
+	"strings"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -48,44 +48,35 @@ func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
-	var casts []models.Cast
-	err := json.Unmarshal(plan, &casts)
+	var castsMap map[string]interface{}
+	err := json.Unmarshal(plan, &castsMap)
+
 	if err != nil {
-		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	var cast models.Cast
-
-	err = json.NewDecoder(r.Body).Decode(&cast) // decoding request body to Cast type of object
+	err = json.NewDecoder(r.Body).Decode(&cast) // decoding request body to Cast object
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
-		return
 	}
-	id := strconv.Itoa(rand.Intn(100000000))
-	for {
-		isValidId := true
-		for _, v := range casts {
-			if v.ID == id {
-				isValidId = false
-			}
-		}
-		if isValidId {
-			break
-		}
-		id = strconv.Itoa(rand.Intn(100000000))
-	}
-	cast.ID = id // generating random id for Cast type of object
+
+	cast.ID = uuid.New().String() // setting random id for cast object
+	cast.ID = strings.ReplaceAll(cast.ID, "-", "")
+
 	err = ValidateCastObject(&cast)
 	if err != nil {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 		return
 	}
 
-	casts = append(casts, cast) // appending Movie type of object to casts array
-	// writing updated casts array into json file
-	file, _ := json.MarshalIndent(casts, "", " ")
+	castsMap[cast.ID] = cast // appending new cast object to castsMap
+
+	// writing updated casts map into json file
+	file, _ := json.MarshalIndent(castsMap, "", " ")
 	ioutil.WriteFile("./src/data/casts.json", file, 0644)
-	json.NewEncoder(w).Encode(cast) // encoding and writing movie in json response
+	json.NewEncoder(w).Encode(cast) // encoding and writing cast in json response
 }
 
 func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
@@ -95,15 +86,33 @@ func (c CastController) GetCasts(w http.ResponseWriter, r *http.Request) {
 
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
-	var casts []models.Cast
-	err := json.Unmarshal(plan, &casts)
+	var castsMap map[string]interface{}
+	err := json.Unmarshal(plan, &castsMap)
+
 	if err != nil {
-		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	casts := []models.Cast{}
+	for _, val := range castsMap {
+		str, err := json.Marshal(val)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		var cast models.Cast
+		err = json.Unmarshal(str, &cast)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		casts = append(casts, cast)
 	}
 
 	// encoding and writing casts in json response
 	json.NewEncoder(w).Encode(casts)
-
 }
 
 func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
@@ -114,25 +123,38 @@ func (c CastController) GetCast(w http.ResponseWriter, r *http.Request) {
 
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
-	var casts []models.Cast
-	err := json.Unmarshal(plan, &casts)
+	var castsMap map[string]interface{}
+	err := json.Unmarshal(plan, &castsMap)
+
 	if err != nil {
-		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	// taking path parameters
 	params := mux.Vars(r)
 
-	// iterate through list of casts
-	for _, item := range casts { // finding cast with given id
-		if item.ID == params["id"] {
-			json.NewEncoder(w).Encode(item) // encoding and writing cast in json response
-			return
-		}
+	castMap, ok := castsMap[params["id"]]
+
+	if !ok {
+		// will throw error if no id found
+		http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
 	}
 
-	// will throw error if no id found
-	http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
+	str, err := json.Marshal(castMap)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var cast models.Cast
+	err = json.Unmarshal(str, &cast)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(cast) // encoding and writing cast in json response
 }
 
 func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
@@ -143,53 +165,56 @@ func (c CastController) UpdateCast(w http.ResponseWriter, r *http.Request) {
 
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
-	var casts []models.Cast
-	err := json.Unmarshal(plan, &casts)
+	var castsMap map[string]interface{}
+	err := json.Unmarshal(plan, &castsMap)
+
 	if err != nil {
-		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	// taking path parameters
 	params := mux.Vars(r)
 
-	// iterate through list of casts
-	for index, item := range casts {
-		if item.ID == params["id"] { // finding cast with given id
-			castOld := item //will store old cast value for comparison purpose
-			var cast models.Cast
-			err := json.NewDecoder(r.Body).Decode(&cast) // decoding request body to Cast type of object
-			if err != nil {
-				http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
-				return
-			}
-
-			// will not allow user to change cast name
-			if castOld.Name != cast.Name {
-				http.Error(w, "cast name cannot be changed", http.StatusBadRequest)
-				return
-			}
-
-			cast.ID = params["id"] // assigning id to Cast type of object
-
-			err = ValidateCastObject(&cast)
-			if err != nil {
-				http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
-				return
-			}
-
-			casts = append(casts[:index], casts[index+1:]...) // updating casts array to delete a cast
-			casts = append(casts, cast)                       // appending Cast type of object to Casts array
-			// writing updated casts array into json file
-			file, _ := json.MarshalIndent(casts, "", " ")
-			ioutil.WriteFile("./src/data/casts.json", file, 0644)
-			json.NewEncoder(w).Encode(cast) // encoding and writing cast in json response
-			return
-		}
+	castMap, ok := castsMap[params["id"]]
+	if !ok {
+		// will throw error if no id found
+		http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
 	}
 
-	// will throw error if no id found
-	http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
+	str, err := json.Marshal(castMap)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var oldCast models.Cast
+	err = json.Unmarshal(str, &oldCast)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	var cast models.Cast
+	err = json.NewDecoder(r.Body).Decode(&cast) // decoding request body to cast object
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		return
+	}
+
+	// validating cast object
+	err = ValidateCastObject(&cast)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
+
+	delete(castsMap, oldCast.ID)  // removing old cast object from map
+	cast.ID = params["id"]        // assigning id to cast object
+	castsMap[params["id"]] = cast // adding new cast object to map
+
+	// writing updated casts map into json file
+	file, _ := json.MarshalIndent(castsMap, "", " ")
+	ioutil.WriteFile("./src/data/casts.json", file, 0644)
+	json.NewEncoder(w).Encode(cast) // encoding and writing cast in json response
 }
 
 func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
@@ -200,27 +225,26 @@ func (c CastController) DeleteCast(w http.ResponseWriter, r *http.Request) {
 
 	// start reading json file
 	plan, _ := ioutil.ReadFile("./src/data/casts.json")
-	var casts []models.Cast
-	err := json.Unmarshal(plan, &casts)
+	var castsMap map[string]interface{}
+	err := json.Unmarshal(plan, &castsMap)
+
 	if err != nil {
-		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	// taking path parameters
 	params := mux.Vars(r)
-	// iterate through list of casts
-	for index, item := range casts {
-		if item.ID == params["id"] { // finding cast with given id
-			casts = append(casts[:index], casts[index+1:]...) // updating casts array to delete a cast
-			// writing updated casts array into json file
-			file, _ := json.MarshalIndent(casts, "", " ")
-			ioutil.WriteFile("./src/data/casts.json", file, 0644)
-			// encoding and writing movies in json response
-			json.NewEncoder(w).Encode(casts)
-			return
-		}
-	}
 
-	// will throw error if no id found
-	http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
+	_, ok := castsMap[params["id"]]
+	if !ok {
+		// will throw error if no id found
+		http.Error(w, fmt.Sprintf("cast with id = %s not found", params["id"]), http.StatusNotFound)
+	}
+	delete(castsMap, params["id"]) // removing cast object from map
+
+	// writing updated casts map into json file
+	file, _ := json.MarshalIndent(castsMap, "", " ")
+	ioutil.WriteFile("./src/data/casts.json", file, 0644)
+	json.NewEncoder(w).Encode(fmt.Sprintf("cast with id = %s deleted successfully", params["id"])) // encoding and writing cast in json response
 }

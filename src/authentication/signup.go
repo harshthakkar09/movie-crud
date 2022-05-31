@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,35 +13,38 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	var user Credentials
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		err := "Error in reading body"
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(err)
+		WriteResponse(w, http.StatusBadRequest, "Error in reading body")
 		return
 	}
 
-	//Reading users.json for user existence
-	var usersArray []Credentials
-	userjson, _ := ioutil.ReadFile("./src/data/users.json")
-	json.Unmarshal(userjson, &usersArray)
+	if len(user.Username) == 0 || len(user.Password) == 0 {
+		WriteResponse(w, http.StatusBadRequest, "Username and password can not be empty")
+		return
+	}
 
-	for _, v := range usersArray {
-		if v.Username == user.Username {
-			err := "Username already in use"
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(err)
-			return
-		}
+	// Reading users.json to usersMap
+	userJson, _ := ioutil.ReadFile("./src/data/users.json")
+	var usersMap map[string]interface{}
+	json.Unmarshal(userJson, &usersMap)
+
+	_, ok := usersMap[user.Username]
+	if ok {
+		WriteResponse(w, http.StatusBadRequest, fmt.Sprintf("User %s already exists", user.Username))
+		return
 	}
 
 	//Generate hash for given password
-	user.Password, err = GeneratehashPassword(user.Password)
+	user.Password, err = GenerateHashPassword(user.Password)
 	if err != nil {
 		log.Fatalln("error in password hash")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	//Append new user
-	usersArray = append(usersArray, user)
-	file, _ := json.MarshalIndent(usersArray, "", " ")
+	usersMap[user.Username] = user.Password
+	file, _ := json.MarshalIndent(usersMap, "", " ")
 	ioutil.WriteFile("./src/data/users.json", file, 0644)
-	json.NewEncoder(w).Encode(user)
+
+	json.NewEncoder(w).Encode(fmt.Sprintf("User %s created successfully", user.Username))
 }
