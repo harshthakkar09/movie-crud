@@ -9,7 +9,7 @@ This is go lang backend application in which user can perform CRUD operations on
 ## How to run
 Below command will start server on http://localhost:8000/
 ```
-go run main.go
+go run src/main.go
 ```
 
 ## Demo link
