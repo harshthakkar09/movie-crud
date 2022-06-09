@@ -42,6 +42,27 @@ func (m MovieController) CreateMovie(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 	}
 
+	for _, val := range moviesMap {
+		str, err := json.Marshal(val)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		var movieRemote models.Movie
+		err = json.Unmarshal(str, &movieRemote)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// checking for duplicate title
+		if movie.Title == movieRemote.Title {
+			http.Error(w, fmt.Sprintf("movie with title %s already exists", movieRemote.Title), http.StatusBadRequest)
+			return
+		}
+	}
+
 	movie.ID = uuid.New().String() // setting random id for Movie object
 	movie.ID = strings.ReplaceAll(movie.ID, "-", "")
 

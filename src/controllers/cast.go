@@ -62,6 +62,27 @@ func (c CastController) CreateCast(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
 	}
 
+	for _, val := range castsMap {
+		str, err := json.Marshal(val)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		var castRemote models.Cast
+		err = json.Unmarshal(str, &castRemote)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// checking for duplicate title
+		if cast.Name == castRemote.Name {
+			http.Error(w, fmt.Sprintf("cast with name %s already exists", cast.Name), http.StatusBadRequest)
+			return
+		}
+	}
+
 	cast.ID = uuid.New().String() // setting random id for cast object
 	cast.ID = strings.ReplaceAll(cast.ID, "-", "")
 
