@@ -1,0 +1,251 @@
+openapi: '3.0.2'
+info:
+  title: 'Movies CRUD API'
+  version: '1.0'
+  description: 'An API allows user to create, read, update and delete movie and cast resources.'
+  license:
+    name: MIT License
+    url: https://github.com/harshthakkar09/movie-crud/blob/main/LICENSE
+servers:
+  - url: http://localhost:8000
+    # description: 'Local host URL accessible via docker'
+
+      
+paths:
+
+  /movies:
+    get:
+      summary: "You can get all available movie resources"
+      responses:
+        '200': 
+          description: A JSON Array of all the movie resources 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:   
+                  $ref: '#/components/schemas/Movies' 
+    post:
+      summary: Post a data for new movie resource
+      requestBody:
+        required: true 
+        content:
+          application/json:
+            schema: 
+              required:
+                - title
+              $ref: '#/components/schemas/Movies'
+      responses: 
+        '200': 
+          description: 'ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movies'
+                
+
+  /movies/{id}:
+    get: 
+      summary: "Get a movie resource based on ID"
+      parameters:
+        - name: id  
+          in: path 
+          required: true 
+          schema:
+            type: integer
+      description: "Get a movie resource based on ID"
+      responses:
+        '200':
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movies'
+  
+    put:
+      parameters:
+        - name: id  
+          in: path 
+          description: ID of movie resource that needs to be updated
+          required: true 
+          schema:
+            type: integer
+      summary: "To update existing movie resource"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Movies'
+          
+      responses:
+        '200':
+          description: 'ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movies'
+                
+    delete: 
+      parameters:
+        - name: id  
+          in: path 
+          description: ID of movie resource that needs to be deleted
+          required: true 
+          schema:
+            type: integer
+      summary: "To delete a existing movie resource"
+      responses:
+        '200': 
+          description: 'ok'
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:  
+                  $ref: '#/components/schemas/Movies'
+                  
+  /cast:
+    get:
+      summary: "You can get all available cast resources"
+      responses:
+        '200': 
+          description: ok 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Casts'
+                  
+    post: 
+      summary: "Post a data for new cast resource"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+              $ref: '#/components/schemas/Casts'
+      responses:
+        '200':
+          description: 'ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Casts'
+  /cast/{id}:
+    get: 
+      summary: "Get a cast resource based on ID"
+      parameters:
+        - name: id  
+          in: path 
+          required: true 
+          schema:
+            type: integer
+      description: "Get a cast resource based on ID"
+      responses:
+        '200':
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Casts'
+    put: 
+      parameters:
+        - name: id  
+          in: path 
+          description: ID of cast that needs to be updated
+          required: true 
+          schema:
+            type: integer
+      summary: "To update existing cast resource"
+      requestBody:
+        content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Casts'
+      responses:
+        '200':
+          description: 'ok'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Casts'
+    delete: 
+      parameters:
+        - name: id  
+          in: path 
+          description: ID of movie resource that needs to be deleted
+          required: true 
+          schema:
+            type: integer
+      summary: "To delete a existing cast resource"
+      responses:
+        '200': 
+          description: 'ok'
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:  
+                  $ref: '#/components/schemas/Casts'
+
+components:
+  schemas:
+    Movies:
+      type: object
+      properties:
+        id: 
+          type: string
+          example: "17852714"
+        isbn:
+          type: string
+          example: "123456789"
+        title:
+          type: string
+          example: "Hera pheri"
+        director: 
+          type: object
+          properties:
+            firstname: 
+              type: string
+              example: "Rohit"
+              #model-path: movie.director
+            lastname: 
+              type: string
+              example: "Shetty"
+        casts: 
+          type: array
+          items: 
+            type: string
+        ratings: 
+          type: array
+          items:
+            type: object
+            properties:
+              rater: 
+                type: string
+                example: "IMDB"
+                #model-path: movie.ratings.0.rater
+              rating: 
+                type: number
+                example: 4.5
+        genre: 
+          type: string
+          example: "comedy"
+    Casts:
+      type: object
+      properties:
+        id: 
+          type: string
+          example: "4800074"
+        name:
+          type: string
+          example: "Akshay Kumar"
+        gender: 
+          type: string
+          example: "male"
+        age: 
+          type: integer
+          example: 55
