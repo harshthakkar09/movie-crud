@@ -20,6 +20,8 @@ func RegisterRoutes() *mux.Router {
 	r.Handle("/movies", middlewares.Auth(http.HandlerFunc(MovieController.CreateMovie))).Methods("POST")        // function handler to create a movie
 	r.Handle("/movies/{id}", middlewares.Auth(http.HandlerFunc(MovieController.UpdateMovie))).Methods("PUT")    // function handler to update a movie
 	r.Handle("/movies/{id}", middlewares.Auth(http.HandlerFunc(MovieController.DeleteMovie))).Methods("DELETE") // function handler to delete a movie
+	r.Handle("/movies/{id}/ratings", middlewares.Auth(http.HandlerFunc(MovieController.AddRatings))).Methods("POST")
+	r.Handle("/movies/{id}/ratings", middlewares.Auth(http.HandlerFunc(MovieController.UpdateRatings))).Methods("PUT")
 
 	CastController := controllers.CastController{}
 	r.Handle("/cast", middlewares.Auth(http.HandlerFunc(CastController.GetCasts))).Methods("GET")           // function handler to get all casts
