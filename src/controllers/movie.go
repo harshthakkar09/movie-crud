@@ -318,8 +318,6 @@ func (m MovieController) AddRatings(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		ratings = append(ratings, ratingData)
-		// fmt.Println(ratings)
-		// r, _ := json.Marshal(ratings)
 
 		movieMap["ratings"] = ratings
 
@@ -404,4 +402,77 @@ func (m MovieController) UpdateRatings(w http.ResponseWriter, r *http.Request) {
 		ioutil.WriteFile("./src/data/movies.json", file, 0644)
 		err = json.NewEncoder(w).Encode(movieMap)
 	}
+}
+
+func (m MovieController) DeleteRatings(w http.ResponseWriter, r *http.Request) {
+	//mutex
+	movieMutex.Lock()
+	defer movieMutex.Unlock()
+
+	plan, _ := ioutil.ReadFile("./src/data/movies.json")
+	var moviesMap map[string]interface{}
+	err := json.Unmarshal(plan, &moviesMap)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	params := mux.Vars(r)
+
+	mov, ok := moviesMap[params["id"]]
+	if !ok {
+		http.Error(w, fmt.Sprintf("movie with id = %s not found", params["id"]), http.StatusNotFound)
+	}
+
+	movieMap := mov.(map[string]interface{})
+
+	var ratingData models.Rating
+	err = json.NewDecoder(r.Body).Decode(&ratingData)
+	if err != nil {
+		http.Error(w, fmt.Sprintln(err), http.StatusBadRequest)
+	}
+
+	if ratsObj, exists := movieMap["ratings"]; exists {
+		var ratings []models.Rating
+		ratingBytes, _ := json.Marshal(ratsObj)
+		json.Unmarshal(ratingBytes, &ratings)
+		if len(ratings) > 1 {
+			fmt.Println(len(ratings))
+			for i := range ratings {
+				if ratings[i].Rater == ratingData.Rater {
+					movieMap["ratings"] = RemoveIndex(ratings, i)
+					var movie models.Movie
+					movieBytes, _ := json.Marshal(movieMap)
+					json.Unmarshal(movieBytes, &movie)
+					fmt.Println(movie)
+					moviesMap[params["id"]] = movie
+				}
+				// writing updated movies map into json file
+				file, _ := json.MarshalIndent(moviesMap, "", " ")
+				ioutil.WriteFile("./src/data/movies.json", file, 0644)
+				err = json.NewEncoder(w).Encode(movieMap)
+
+			}
+		} else {
+			delete(movieMap, "ratings")
+			var movie models.Movie
+			movieBytes, _ := json.Marshal(movieMap)
+			json.Unmarshal(movieBytes, &movie)
+			fmt.Println(movie)
+			moviesMap[params["id"]] = movie
+			file, _ := json.MarshalIndent(moviesMap, "", " ")
+			ioutil.WriteFile("./src/data/movies.json", file, 0644)
+			err = json.NewEncoder(w).Encode(movieMap)
+		}
+
+	} else {
+		http.Error(w, fmt.Sprintf("Rater Doesn't Exists...."), http.StatusOK)
+		return
+	}
+}
+
+func RemoveIndex(s []models.Rating, index int) []models.Rating {
+	fmt.Println("From Remove Index", s[:index])
+	fmt.Println("From Remove Index", s[index+1:])
+	return append(s[:index], s[index+1:]...)
+
 }
